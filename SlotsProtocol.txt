@@ -1,0 +1,164 @@
+protocol说明：
+---------------------------
+C : Client
+S : Server
+---------------------------
+登陆协议：
+C --> S:
+		CMD: 0x103
+		byte: 登陆类型[游客则为1]
+		string: uid 唯一设备ID
+		string: 名称
+		int: 设备类型[iphone为1, android为2...]
+		int: 下载渠道[appstore为1...]
+
+S --> C:
+		CMD: 0x112
+		int: 游戏ID
+
+S --> C:
+		CMD: 0x1506
+		int: 金币
+		int: 赢的次数
+		int: 输的次数
+
+获取奖励协议:
+C --> S:
+        CMD: 0x1507
+        空
+S --> C:
+        CMD: 0x1508
+        int: 奖励列表数量 size
+        for size
+            int: 奖励列表长度
+            for len
+                int: 奖励ID
+                int: 奖励金币数量
+
+获取下注数量列表协议:
+C --> S:
+        CMD: 0x1509
+        空
+S --> C:
+        CMD: 0x150A
+        int: 下注列表长度
+        for len
+        	int: 下注等级ID
+        	int: 下注数量
+
+摇杆协议(即玩游戏):
+C --> S:
+        CMD: 0x150B
+        int: 下注等级ID
+S --> C:
+        CMD: 0x150C
+        int: 中奖等级[0不中奖]
+        int: 中奖金币数量
+        int: 玩家现在金币数量
+        int: 列数量
+        for 3 (一般是3)
+        	int: scollID(表示第几列)
+        	int: 物品下标(表示什么物品)
+S --> C:
+        CMD: 0x150D
+        int: 错误类型(1: 下注错误, 2: 钱不足)
+
+获取金币排行榜:
+C --> S:
+        CMD: 0x150E
+S --> C:
+        CMD: 0x1511
+        int: len 前N名的长度
+        for len
+            int: 用户ID
+            int: 用户金币
+            string: 用户名称
+            int: 用户名次 [从1开始]
+
+获取奖金排行榜:
+C --> S:
+        CMD: 0x150F
+S --> C:
+        CMD: 0x1512
+        int: len 前N名的长度
+        for len
+            int: 用户ID
+            int: 用户中奖金额
+            string: 用户名称
+            int: 用户名次 [从1开始]
+
+获取自己的排行:
+C --> S:
+        CMD: 0x1510
+S --> C:
+        CMD: 0x1513
+        int: 金币排名名次 [从1开始]
+        int: 金币数量
+        int: 奖金排名名次 [从1开始]
+        int: 奖金数量
+
+获取商品列表:
+C --> S:
+        CMD: 0x1514
+        int: 平台类型
+S --> C:
+        CMD: 0x1515
+        int: 商品列表长度
+        for len
+            int: 商品id
+            string: 商品名称
+            string: 商品价格
+            int: 金币数量
+
+获取购物流水号:
+C --> S:
+        CMD: 0x1516
+        int: 平台类型
+        int: 商品ID
+S --> C:
+        CMD: 0x1517
+        int: 成功或失败(1/0)
+        string: 流水号
+
+购买结果:
+C --> S:
+        CMD: 0x1518
+        int: 平台类型
+        int: 购买结果, 成功或失败(1/0)
+        string: 流水号
+        string: 商店流水号
+S --> C:
+        CMD: 0x1519
+        int: 成功或失败(1/0)
+        int: 充值数量
+        int: 用户真实的钱
+
+//////////////////////////////////// logic ///////////////////////////////////
+水果列表:
+1:红7  2:黄7  3:砖石
+4:西瓜 5:樱桃  6:蓝莓
+7:橘子 8:香蕉  9:柠檬  
+10:BAR
+
+#define LUCKY_THREE_REDSEVEN	1	// 三条红7 100k * 1000
+#define LUCKY_THREE_GOLDSEVEN	2	// 三条黄7 100k * 100
+#define LUCKY_THREE_DIAMOND		3	// 三只钻石 100k * 50
+#define LUCKY_THREE_WATERMELON	4	// 三只西瓜 100k * 20
+#define LUCKY_THREE_CHERRY		5	// 三只樱桃 100k * 10
+#define LUCKY_THREE_BULEBERRY	6	// 三只蓝莓 100k * 8
+#define LUCKY_THREE_ORANGE		7	// 三只橙子 100k * 8
+#define LUCKY_THREE_BANANA		8	// 三只香蕉 100k * 5
+#define LUCKY_THREE_LEMON		9	// 三只柠檬 100k * 5
+#define LUCKY_THREE_BAR			10	// 三只bar 100k * 5
+#define LUCKY_TWO_REDSEVEN_R	11	// 左边两只红7 右边随意 100k * 3
+#define LUCKY_TWO_GOLDSEVEN_R	12	// 左边两只黄7 右边随意 100k * 3
+#define LUCKY_TWO_DIAMOND_R		13	// 左边两只钻石 右边随意 100k * 3
+#define LUCKY_TWO_REDSEVEN_L	14	// 右边两只红7 左边随意 100k * 3
+#define LUCKY_TWO_GOLDSEVEN_L	15	// 右边两只黄7 左边随意 100k * 3
+#define LUCKY_TWO_DIAMOND_L		16	// 右边两只钻石 左边随意 100k * 3
+#define LUCKY_TWO_REDSEVEN_M	17	// 两边两只红7 中间随意 100k * 2
+#define LUCKY_TWO_GOLDSEVEN_M	18	// 两边两只黄7 中间随意 100k * 2
+#define LUCKY_TWO_DIAMOND_M		19	// 两边两只钻石 中间随意 100k * 2
+#define LUCKY_TWO_ANYFRUID_R	20	// 左边两只水果 右边随意 100k * 2
+#define LUCKY_TWO_ANYFRUID_L	21	// 右边两只水果 左边随意 100k * 2
+#define LUCKY_TWO_ANYFRUID_M	22	// 两边两只水果 中间随意 100k * 2
